@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGLM Web Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            padding: 10px;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background-color: #e1ffc7;
+            align-self: flex-end;
+        }
+
+        .message.bot {
+            background-color: #f1f1f1;
+            align-self: flex-start;
+        }
+
+        .input-container {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 0;
+        }
+
+        .input-container button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" />
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="input-container">
+            <input type="text" id="inputText" placeholder="Type a message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const inputText = document.getElementById('inputText').value;
+            if (!inputText) return;
+
+            addMessage(inputText, 'user');
+
+            const response = await fetch('http://10.68.81.184:5000/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: inputText }),
+            });
+            const data = await response.json();
+            addMessage(data.generated_text, 'bot');
+
+            document.getElementById('inputText').value = '';
+        }
+
+        function addMessage(text, sender) {
+            const message = document.createElement('div');
+            message.classList.add('message', sender);
+            message.innerText = text;
+            document.getElementById('messages').appendChild(message);
+            message.scrollIntoView();
+        }
+    </script>
+</body>
+</html>
